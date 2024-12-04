@@ -9,30 +9,20 @@ function App() {
   
   const [data, setData] = useState([]);
   const [apiToken,setApiToken] = useState(null)
-  const [quizElements,setQuizElements] = useState([]);
+  
   const [questionIndex,setQuestionIndex] = useState(0);
   const [gameIsActive,setGameIsActive] = useState(false);
+  
+  const [isGameOver,setIsGameOver] = useState(false);
   const [roundIsOver,setRoundIsOver] = useState(false)
+  
   const [correctAnswers,setCorrectAnswers] = useState(0);
   const [playerLives,setPlayLives] = useState(3);
-  const [isGameOver,setIsGameOver] = useState(false);
   
     useEffect(() => {
       fetchApiToken()
-      
     },[])
 
-    useEffect(() => {
-      
-      if(gameIsActive){
-        renderQuizElements()
-      }
-    },[data])
-
-    useEffect(() => {
-      console.log(questionIndex)
-    },[questionIndex])
-  
   const updateQuestionIndex = () => {
     setQuestionIndex((prevIndex) => {
       const nextIndex = prevIndex === data.length - 1 ? 0 : prevIndex + 1;
@@ -56,7 +46,7 @@ function App() {
   }
   
   const fetchApiData = () => {
-    axios.get(`https://opentdb.com/api.php?amount=10&token=${apiToken}&type=multiple`).then((res) => {
+    axios.get(`https://opentdb.com/api.php?amount=50&token=${apiToken}&type=multiple`).then((res) => {
       
       console.log(res.data)
       const dataResponse = res.data.results;
@@ -87,11 +77,11 @@ function App() {
     if(value === data[index].correctAnswer){
         console.log("correct answer")
         setCorrectAnswers((prevState) => prevState + 1);
-        setRoundIsOver((prevState => !prevState))
+        setRoundIsOver(true)
         
     }else{
       console.log("Wrong answer")
-      setRoundIsOver((prevState => !prevState))
+      setRoundIsOver(true)
       setPlayLives((prevState) => {
         if(prevState -1 === 0){
           setIsGameOver(true)
@@ -107,20 +97,20 @@ function App() {
 
 
   const renderQuizElements = () => {
-     return setQuizElements(data.map((item,index) => {
-        return (
-          <div key={index}>
-            <h2>{item.question}</h2>
-            <button onClick={(e) => checkAnswer(e,index)} value={item.answers[0]}>{item.answers[0]}</button>
-            <button onClick={(e) => checkAnswer(e,index)} value={item.answers[1]}>{item.answers[1]}</button>
-            <button onClick={(e) => checkAnswer(e,index)} value={item.answers[2]}>{item.answers[2]}</button>
-            <button onClick={(e) => checkAnswer(e,index)} value={item.answers[3]}>{item.answers[3]}</button>
-          </div>
-
-          
-        )
-      }))
+    const currentQuestion = data[questionIndex];  
+    if (!currentQuestion) return null; 
+    return (
+      <div key={questionIndex}>
+        <h2>{currentQuestion.question}</h2>
+        {currentQuestion.answers.map((answer, id) => (
+          <button key={id} onClick={(e) => checkAnswer(e, questionIndex)} value={answer}>
+            {answer}
+          </button>
+        ))}
+      </div>
+    );      
   }
+  
   
   
   const fetchApiToken = () => {
@@ -140,12 +130,12 @@ function App() {
         <button onClick={fetchApiData}>API QUESTION DATA</button>
         <button onClick={() => console.log(apiToken)}>Log Token</button>
         <button onClick={() => console.log(data)}>Log ARRAY</button>
-        <button onClick={() => {renderQuizElements(),setGameIsActive(true)}}>RENDER ELEMETNS</button>
+        <button onClick={() => setGameIsActive(true)}>RENDER ELEMETNS</button>
         <button onClick={() => console.log(questionIndex)}>LOG QUESTON INDEX</button>
         <button onClick={updateQuestionIndex}>ADD 1 TO QUESTION INDEX</button>
 
-        {!isGameOver ? quizElements[questionIndex]: ""}
-        {roundIsOver && <button onClick={() => {updateQuestionIndex(),setRoundIsOver(false)}}>Next question</button>}
+        {gameIsActive && !isGameOver ? renderQuizElements(): null}
+        {roundIsOver && !isGameOver ? <button onClick={() => {updateQuestionIndex(),setRoundIsOver(false)}}>Next question</button>:null}
         
       </div>
         
