@@ -34,8 +34,6 @@ function App() {
           setTimer((prevState) => prevState - 1)
         }
           
-        
-        
       },1000)
   
   
@@ -46,11 +44,18 @@ function App() {
     
   useEffect(() => {
     fetchApiToken()
+    
   },[])
+
+  useEffect(() => {
+    if(apiToken){
+      fetchApiData()
+    }
+  },[apiToken])
 
   
   const updateQuestionIndex = () => {
-    setTimer(5);
+    setTimer(10);
     setQuestionIndex((prevIndex) => {
       const nextIndex = prevIndex === data.length - 1 ? 0 : prevIndex + 1;
       if (nextIndex === 0) {
@@ -73,7 +78,7 @@ function App() {
   }
   
   const fetchApiData = () => {
-    axios.get(`https://opentdb.com/api.php?amount=50&token=${apiToken}&type=multiple`).then((res) => {
+    axios.get(`https://opentdb.com/api.php?amount=5&token=${apiToken}&type=multiple`).then((res) => {
       
       console.log(res.data)
       const dataResponse = res.data.results;
@@ -156,13 +161,7 @@ function App() {
         {isGameOver && <h1>GAME IS OVER</h1>}
         <h2>CORRECT ANSWERS:{correctAnswers}</h2>
         <h2>PLAYER LIVES :{playerLives}</h2>
-        <button onClick={fetchApiData}>API QUESTION DATA</button>
-        <button onClick={() => console.log(apiToken)}>Log Token</button>
-        <button onClick={() => console.log(data)}>Log ARRAY</button>
-        <button onClick={() => setGameIsActive(true)}>RENDER ELEMETNS</button>
-        <button onClick={() => console.log(questionIndex)}>LOG QUESTON INDEX</button>
-        <button onClick={updateQuestionIndex}>ADD 1 TO QUESTION INDEX</button>
-
+        <button onClick={() => {setGameIsActive(true)}}>Start Quiz</button>
         {gameIsActive && !isGameOver ? renderQuizElements(): null}
         {roundIsOver && !isGameOver ? <button onClick={() => {updateQuestionIndex(),setRoundIsOver(false)}}>Next question</button>:null}
         
