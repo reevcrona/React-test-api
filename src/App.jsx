@@ -17,6 +17,27 @@ function App() {
     
   },[])
 
+  useEffect(() => {
+    
+    if(gameStarted){
+      renderQuizElements()
+    }
+  },[data])
+
+  const updateQuestionIndex = () => {
+    if(questionIndex === data.length - 1){
+      fetchApiData();
+      setQuestionIndex(0)
+      
+      console.log(`Fetched new questions. Token:${apiToken}`)
+      console.log(data)
+    }else{
+      setQuestionIndex((prevState) => prevState + 1)
+      console.log(questionIndex)
+    }
+    
+  }
+
   const shuffleArray = (array) => {
     for(let i = array.length -1; i > 0; i--){
 
@@ -29,7 +50,7 @@ function App() {
   }
   
   const fetchApiData = () => {
-    axios.get(`https://opentdb.com/api.php?amount=2&token=${apiToken}&type=multiple`).then((res) => {
+    axios.get(`https://opentdb.com/api.php?amount=10&token=${apiToken}&type=multiple`).then((res) => {
       
       console.log(res.data)
       const dataResponse = res.data.results;
@@ -49,6 +70,8 @@ function App() {
   }
   
   
+
+
   const renderQuizElements = (index) => {
      return setQuizElements(data.map((item,i) => {
         return (
@@ -70,6 +93,7 @@ function App() {
     })
   }
 
+
   
   return (
     
@@ -77,9 +101,10 @@ function App() {
         <button onClick={fetchApiData}>API QUESTION DATA</button>
         <button onClick={() => console.log(apiToken)}>Log Token</button>
         <button onClick={() => console.log(data)}>Log ARRAY</button>
-        <button onClick={renderQuizElements}>Log ELEMETNS</button>
+        <button onClick={() => {renderQuizElements(),setGameStarted(true)}}>RENDER ELEMETNS</button>
+        <button onClick={updateQuestionIndex}>ADD 1 TO QUESTION INDEX</button>
 
-        {quizElements}
+        {quizElements[questionIndex]}
       </div>
         
   )
