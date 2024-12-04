@@ -1,6 +1,7 @@
 import { useState,useEffect } from 'react'
 import axios from "axios";
 import {nanoid} from "nanoid";
+import he from "he";
 
 import './App.css'
 
@@ -10,7 +11,8 @@ function App() {
   const [apiToken,setApiToken] = useState(null)
   const [quizElements,setQuizElements] = useState([]);
   const [questionIndex,setQuestionIndex] = useState(0);
-  const [gameStarted,setGameStarted] = useState(false);
+  const [questionActive,setQuestionActive] = useState(false);
+  const [correctAnswers,setCorrectAnswers] = useState(0);
   
   useEffect(() => {
     fetchApiToken()
@@ -19,22 +21,23 @@ function App() {
 
   useEffect(() => {
     
-    if(gameStarted){
+    if(questionActive){
       renderQuizElements()
     }
-  },[data])
+  },[data],questionIndex)
 
+  useEffect(() => {
+    console.log(questionIndex)
+  },[questionIndex])
+  
   const updateQuestionIndex = () => {
-    if(questionIndex === data.length - 1){
-      fetchApiData();
-      setQuestionIndex(0)
-      
-      console.log(`Fetched new questions. Token:${apiToken}`)
-      console.log(data)
-    }else{
-      setQuestionIndex((prevState) => prevState + 1)
-      console.log(questionIndex)
-    }
+    setQuestionIndex((prevIndex) => {
+      const nextIndex = prevIndex === data.length - 1 ? 0 : prevIndex + 1;
+      if (nextIndex === 0) {
+        fetchApiData(); // Fetch new data when the index resets to 0
+      }
+      return nextIndex;
+    });
     
   }
 
@@ -56,31 +59,51 @@ function App() {
       const dataResponse = res.data.results;
 
       setData(dataResponse.map((item) => {
-        const shuffledAnswers = shuffleArray([item.correct_answer,...item.incorrect_answers])
+
         
+        const deCodedCorrectAnswer = he.decode(item.correct_answer);
+        const decodedIncorrectAnswers = item.incorrect_answers.map((answer) => he.decode(answer))
+
+        const shuffledAnswers = shuffleArray([deCodedCorrectAnswer,...decodedIncorrectAnswers])
+        
+
         return {
           id:nanoid(),
-          correctAnswer:item.correct_answer,
+          correctAnswer:deCodedCorrectAnswer,
           answers:shuffledAnswers,
-          question:item.question
+          question:he.decode(item.question)
         }
 
       }))
     })
   }
   
-  
+  const checkAnswer = (e,index) => {
+    const {value} = e.target;
+
+    if(value === data[index].correctAnswer){
+        console.log("correct answer")
+        setCorrectAnswers((prevState) => prevState + 1);
+        
+        
+    }else{
+      console.log("Wrong answer")
+     
+
+    }
+    
+  }
 
 
-  const renderQuizElements = (index) => {
-     return setQuizElements(data.map((item,i) => {
+  const renderQuizElements = () => {
+     return setQuizElements(data.map((item,index) => {
         return (
-          <div key={i}>
+          <div key={index}>
             <h2>{item.question}</h2>
-            <button>{item.answers[0]}</button>
-            <button>{item.answers[1]}</button>
-            <button>{item.answers[2]}</button>
-            <button>{item.answers[3]}</button>
+            <button onClick={(e) => checkAnswer(e,index)} value={item.answers[0]}>{item.answers[0]}</button>
+            <button onClick={(e) => checkAnswer(e,index)} value={item.answers[1]}>{item.answers[1]}</button>
+            <button onClick={(e) => checkAnswer(e,index)} value={item.answers[2]}>{item.answers[2]}</button>
+            <button onClick={(e) => checkAnswer(e,index)} value={item.answers[3]}>{item.answers[3]}</button>
           </div>
         )
       }))
@@ -98,13 +121,17 @@ function App() {
   return (
     
       <div className='main-container'>
+        <h2>{correctAnswers}</h2>
         <button onClick={fetchApiData}>API QUESTION DATA</button>
         <button onClick={() => console.log(apiToken)}>Log Token</button>
         <button onClick={() => console.log(data)}>Log ARRAY</button>
-        <button onClick={() => {renderQuizElements(),setGameStarted(true)}}>RENDER ELEMETNS</button>
+        <button onClick={() => {renderQuizElements(),setQuestionActive(true)}}>RENDER ELEMETNS</button>
+        <button onClick={() => console.log(questionIndex)}>LOG QUESTON INDEX</button>
         <button onClick={updateQuestionIndex}>ADD 1 TO QUESTION INDEX</button>
 
         {quizElements[questionIndex]}
+
+        
       </div>
         
   )
