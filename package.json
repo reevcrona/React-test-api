@@ -1,4 +1,5 @@
 {
+  "homepage": "http://reevcrona.github.io/React-test-api",
   "name": "my-react-app",
   "private": true,
   "version": "0.0.0",
@@ -7,9 +8,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
+    "axios": "^1.7.9",
+    "nanoid": "^5.0.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -22,6 +27,7 @@
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
+    "gh-pages": "^6.2.0",
     "globals": "^15.11.0",
     "vite": "^5.4.10"
   }

@@ -1,39 +1,65 @@
 import { useState,useEffect } from 'react'
+import axios from "axios";
+import {nanoid} from "nanoid";
 
 import './App.css'
 
 function App() {
   
   const [data, setData] = useState([]);
-
-
-  const fetchData = () => {
-    fetch('https://dog.ceo/api/breeds/image/random')
-      .then(response => response.json())
-      .then(json => setData(json))
-      .catch(error => console.error(error));
-  }
+  const [apiToken,setApiToken] = useState(null)
   
   useEffect(() => {
+    fetchApiToken()
     
-    fetchData();
+  },[])
+
+  const shuffleArray = (array) => {
+    for(let i = array.length -1; i > 0; i--){
+
+      const randomIndex = Math.floor(Math.random() * (i + 1));
+
+      [array[i], array[randomIndex]] = [array[randomIndex], array[i]];
+
+    }
+    return array;
+  }
+  
+  const fetchApiData = () => {
+    axios.get(`https://opentdb.com/api.php?amount=2&token=${apiToken}&type=multiple`).then((res) => {
       
-  }, []);
+      console.log(res.data)
+      const dataResponse = res.data.results;
 
-  console.log(data)
+      setData(dataResponse.map((item,index) => {
+        const shuffledAnswers = shuffleArray([item.correct_answer,...item.incorrect_answers])
+        
+        return {
+          id:nanoid(),
+          correctAnswer:item.correct_answer,
+          answers:shuffledAnswers,
+          question:item.question
+        }
 
+      }))
+      
+    })
+  }
+  
+  const fetchApiToken = () => {
+    axios.get("https://opentdb.com/api_token.php?command=request").then((res) => {
+        setApiToken(res.data.token)
+    })
+  }
+
+  
   return (
     
       <div className='main-container'>
-      <h2>API response {JSON.stringify(data)}</h2>
-      <h2>You can also take a look in the console</h2>
-      {data &&
-        <img className="api-img" src ={data.message}></img>
-        
-      }
-        
-        <h3>Status: {data.status}</h3>
-        <button onClick={fetchData}>Click me for new dog :)</button>
+        <button onClick={fetchApiData}>API QUESTION DATA</button>
+        <button onClick={() => console.log(apiToken)}>Log Token</button>
+        <button onClick={() => console.log(data)}>Log ARRAY</button>
+
       </div>
         
   )
