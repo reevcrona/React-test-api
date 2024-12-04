@@ -18,16 +18,43 @@ function App() {
   
   const [correctAnswers,setCorrectAnswers] = useState(0);
   const [playerLives,setPlayLives] = useState(3);
+
+  const [timer,setTimer] = useState(10);
+  
   
     useEffect(() => {
-      fetchApiToken()
-    },[])
+      
+      if(timer === 0 || !gameIsActive) return;
+  
+      const timerTimeout = setTimeout(() => {
+        if(roundIsOver){
+         clearTimeout(timerTimeout)
+        }
+        else{
+          setTimer((prevState) => prevState - 1)
+        }
+          
+        
+        
+      },1000)
+  
+  
+      return () => clearTimeout(timerTimeout)
+    },[timer,gameIsActive,roundIsOver])
+  
+    
+    
+  useEffect(() => {
+    fetchApiToken()
+  },[])
 
+  
   const updateQuestionIndex = () => {
+    setTimer(5);
     setQuestionIndex((prevIndex) => {
       const nextIndex = prevIndex === data.length - 1 ? 0 : prevIndex + 1;
       if (nextIndex === 0) {
-        fetchApiData(); // Fetch new data when the index resets to 0
+        fetchApiData(); 
       }
       return nextIndex;
     });
@@ -88,6 +115,7 @@ function App() {
           return prevState - 1
         }else{
           return prevState - 1
+          
         }
       })
       
@@ -124,6 +152,7 @@ function App() {
   return (
     
       <div className='main-container'>
+        <h2>{timer}</h2>
         {isGameOver && <h1>GAME IS OVER</h1>}
         <h2>CORRECT ANSWERS:{correctAnswers}</h2>
         <h2>PLAYER LIVES :{playerLives}</h2>
