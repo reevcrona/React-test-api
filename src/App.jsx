@@ -8,6 +8,9 @@ function App() {
   
   const [data, setData] = useState([]);
   const [apiToken,setApiToken] = useState(null)
+  const [quizElements,setQuizElements] = useState([]);
+  const [questionIndex,setQuestionIndex] = useState(0);
+  const [gameStarted,setGameStarted] = useState(false);
   
   useEffect(() => {
     fetchApiToken()
@@ -31,7 +34,7 @@ function App() {
       console.log(res.data)
       const dataResponse = res.data.results;
 
-      setData(dataResponse.map((item,index) => {
+      setData(dataResponse.map((item) => {
         const shuffledAnswers = shuffleArray([item.correct_answer,...item.incorrect_answers])
         
         return {
@@ -42,9 +45,24 @@ function App() {
         }
 
       }))
-      
     })
   }
+  
+  
+  const renderQuizElements = (index) => {
+     return setQuizElements(data.map((item,i) => {
+        return (
+          <div key={i}>
+            <h2>{item.question}</h2>
+            <button>{item.answers[0]}</button>
+            <button>{item.answers[1]}</button>
+            <button>{item.answers[2]}</button>
+            <button>{item.answers[3]}</button>
+          </div>
+        )
+      }))
+  }
+  
   
   const fetchApiToken = () => {
     axios.get("https://opentdb.com/api_token.php?command=request").then((res) => {
@@ -59,7 +77,9 @@ function App() {
         <button onClick={fetchApiData}>API QUESTION DATA</button>
         <button onClick={() => console.log(apiToken)}>Log Token</button>
         <button onClick={() => console.log(data)}>Log ARRAY</button>
+        <button onClick={renderQuizElements}>Log ELEMETNS</button>
 
+        {quizElements}
       </div>
         
   )
